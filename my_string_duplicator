@@ -1,0 +1,17 @@
+#include "stdlib.h"
+#include "string.h"
+#include "assert.h"
+char* stringDuplicator(char* s, int times)
+{
+    assert(s != NULL);
+    assert(times > 0);
+    int len = strlen(s);
+    char* out = malloc(sizeof(char)*(len*times)+1);
+    char* temp_out=out;
+    assert(out != NULL);
+    for (int i=0; i<times; i++){
+        strcpy(temp_out,s);
+        temp_out += len;
+    }
+    return out;
+}
