@@ -51,10 +51,11 @@ int RLEListSize(RLEList list)
         return -1;
     }
     int totalCharacters=0;
-    while(list)
+    RLEList tempList=list;
+    while(tempList)
     {
-        totalCharacters+=list->timesAppeared;
-        list=list->next;
+        totalCharacters+=tempList->timesAppeared;
+        tempList=tempList->next;
     }
     return totalCharacters;
 }
@@ -73,28 +74,29 @@ RLEListResult RLEListRemove(RLEList list, int index)
     }
     int currentIndex=0;
     RLEList previous=list;
-    while(list)
+    RLEList tempList=list;
+    while(tempList)
     { 
-        currentIndex+=list->timesAppeared;
+        currentIndex+=tempList->timesAppeared;
         if(index <= currentIndex)
         {
-            list->timesAppeared--;
-            if(list->timesAppeared == 0)
+            tempList->timesAppeared--;
+            if(tempList->timesAppeared == 0)
             {
-                previous->next=list->next;
+                previous->next=tempList->next;
                 free(list);
                 break;
             } 
         } 
-        if(list=previous)
+        if(tempList=previous)
         {
-            list=list->next;
+            tempList=tempList->next;
             continue;
         }
         previous=list; 
-        list=list->next;    
+        tempList=tempList->next;    
     } 
-    return RLE_LIST_SUCCES       
+    return RLE_LIST_SUCCESS;      
 }
 
 char RLEListGet(RLEList list, int index, RLEListResult *result)
@@ -110,7 +112,7 @@ char RLEListGet(RLEList list, int index, RLEListResult *result)
             {
                 return(tempList->c);
             }
-            tempList=templist->next;
+            tempList=tempList->next;
         }
     }
     else 
