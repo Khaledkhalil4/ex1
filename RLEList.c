@@ -1,10 +1,11 @@
 #include "RLEList.h"
+#include <string.h>
 
 
 struct RLEList_t{
     char c;
     int timesAppeared;
-    RLEList next;  
+    RLEList* next;  
     //TODO: implement
 };
 //add temp list to all functions
@@ -121,21 +122,88 @@ char RLEListGet(RLEList list, int index, RLEListResult *result)
     }
 }
 
+char* numberToString(RLEList currentNode)
+{
+    int i=0;
+    int num=urrentNode->timesAppeared;
+    while(num)
+    {
+        i++
+        num/=10;
+    }
+    char* numberString=malloc(sizeof(*(numberString)*i));
+        if(numberToString == NULL)
+        {
+            return RLE_LIST_NULL_ARGUMENT;
+        }
+    int j=0;
+    while(currentNode->timesAppeared)
+    {
+        numberString[j]=(currentNode->timesAppeared%10)+'0'
+        currentNode->timesAppeared/=10;
+        j++;
+    }
+    return numberString;
+}
+
 char* RLEListExportToString(RLEList list, RLEListResult* result)
 {
     RLEList tempList=list;
     if(result == RLE_LIST_SUCCESS)
-    {
-        int len=RLEListSize(list);
-        char* word=malloc(sizeof(*(word)*len+1));
+    {  
+        int length;
+        while(tempList)
+        {
+            length+=sizeof(tempList->c)
+            while(tempList->timesAppeared)
+            {
+                length++; //sizeof(int)
+                tempList->timesAppeared/=10;   //check the 3otek
+            }
+            length++;  //\n
+        }
+        char* encodedWord=malloc(length+1);
+        if(encodedWord == NULL)
+        {
+            return RLE_LIST_NULL_ARGUMENT;
+        }
+        for(int j=0;j<length+1>;j++)
+        {
+            encodedWord[j]='\0';
+        }
+        tempList=list;
         int i=0;
+        while(tempList)
+        {
+            strcat(encodedWord,tempList->c)
+            char* numberString=numberToString(tempList);
+            strcat(encodedWord,numberString);
+            free(numberString);
+            strcat(encodedWord,'\n');
+            tempList=tempList->next;
+        }
+        return encodedWord;
+    }
+    else
+    {
+        return NULL;
     }
 }
+
+
 
 RLEListResult RLEListMap(RLEList list, MapFunction map_function)
 {
     if(list == NULL)
-    {
-        return RLE_LIST_NULL_ARGUMENT;
-    }
+        {
+            return(RLE_LIST_NULL_ARGUMENT);
+        }
+    RLEList tempList=list;
+    while(tempList)
+        {   
+            tempList->c=map_function(tempList->c);
+            tempList=tempList->next;
+        }
+    return RLE_LIST_SUCCESS;
+    
 }
