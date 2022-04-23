@@ -134,6 +134,8 @@ char* RLEListExportToString(RLEList list, RLEListResult* result)
 
 RLEListResult RLEListMap(RLEList list, MapFunction map_function)
 {
-    
-    
+    if(list == NULL)
+    {
+        return RLE_LIST_NULL_ARGUMENT;
+    }
 }
