@@ -1,24 +1,31 @@
 #include "RLEList.h"
 #include <string.h>
+#include <stdlib.h>
 
+#define NULL_LIST -1
+#define TWO 2
+#define TEN 10
 
-struct RLEList_t{
+typedef struct RLEList_t{
     char c;
     int timesAppeared;
-    RLEList* next;  
+    struct RLEList_t *next;
     //TODO: implement
-};
-//add temp list to all functions
+} RLEList_t;
+
+
 //implement the functions here
 RLEList RLEListCreate()
 {
     RLEList ptr=malloc(sizeof(*ptr));
-    if(ptr != NULL)
+    if(ptr == NULL)
     {
         return NULL;
     }
-    assert(ptr != NULL);
-    ptr->next=NULL;  
+    ptr->c='\0';
+    ptr->timesAppeared=0;
+    ptr->next=NULL;
+    return ptr;
 }
 
 void RLEListDestroy(RLEList list)
@@ -33,23 +40,38 @@ void RLEListDestroy(RLEList list)
 
 RLEListResult RLEListAppend(RLEList list, char value)
 {
-    if(value == NULL)
-    {
-        return(RLE_LIST_NULL_ARGUMENT);
-    }
     if(list == NULL)
     {
-        return(RLE_LIST_OUT_OF_MEMORY);
+        return RLE_LIST_NULL_ARGUMENT;
     }
-    list->c=value;
-    return(RLE_LIST_SUCCESS);
+    RLEList tempList=list;
+    while(tempList->next)
+    {
+        tempList=tempList->next;
+    }
+    if(value == tempList->c)
+    {
+        tempList->timesAppeared+=1;
+    }
+    else
+    {
+        RLEList newList=RLEListCreate();
+        if(!newList)
+        {
+            return RLE_LIST_OUT_OF_MEMORY;
+        }
+        tempList->next=newList;
+        newList->c=value;
+        newList->timesAppeared+=1;
+    }
+    return RLE_LIST_SUCCESS;
 }
 
 int RLEListSize(RLEList list)
 {
     if(list == NULL)
     {
-        return -1;
+        return NULL_LIST;
     }
     int totalCharacters=0;
     RLEList tempList=list;
@@ -67,143 +89,184 @@ RLEListResult RLEListRemove(RLEList list, int index)
     {
         return(RLE_LIST_NULL_ARGUMENT);
     }
-    int length=RLEListSize(list);
 
-    if (index>length || index <0 )
+    if (index>=RLEListSize(list) || index <0 )
     {
-        return RLE_LIST_INDEX_OUT_OF_BOUNDS; 
+        return RLE_LIST_INDEX_OUT_OF_BOUNDS;
     }
+    index++;
     int currentIndex=0;
     RLEList previous=list;
-    RLEList tempList=list;
+    RLEList tempList=list->next;
     while(tempList)
-    { 
+    {
         currentIndex+=tempList->timesAppeared;
         if(index <= currentIndex)
         {
             tempList->timesAppeared--;
             if(tempList->timesAppeared == 0)
             {
+                RLEList nextList=tempList->next;
+                if(nextList!=NULL && previous->c==nextList->c)
+                {
+                    previous->timesAppeared+=nextList->timesAppeared;
+                    previous->next=nextList->next;
+                    free(tempList->next);
+                    free(tempList);
+                    break;
+                }
                 previous->next=tempList->next;
-                free(list);
+                free(tempList);
                 break;
-            } 
-        } 
-        if(tempList=previous)
-        {
-            tempList=tempList->next;
-            continue;
+            }
+            break;
         }
-        previous=list; 
-        tempList=tempList->next;    
-    } 
-    return RLE_LIST_SUCCESS;      
+        previous=tempList;
+        tempList=tempList->next;
+    }
+    return RLE_LIST_SUCCESS;
 }
 
-char RLEListGet(RLEList list, int index, RLEListResult *result)
+char RLEListGet(RLEList list, int index, RLEListResult *result) //check *RESULT
 {
-    RLEList tempList=list;
-    if(result == RLE_LIST_SUCCESS)
+    if(!list)
     {
-        int currentIndex=0;
-        while(tempList)
+        if(result)
         {
-            currentIndex+=list->timesAppeared;
-            if(currentIndex>=index)
-            {
-                return(tempList->c);
-            }
-            tempList=tempList->next;
+            *result= RLE_LIST_NULL_ARGUMENT;
         }
-    }
-    else 
-    {
         return 0;
     }
+    if(index>= RLEListSize(list) || index<0)
+    {
+        if(result)
+        {
+            *result=RLE_LIST_INDEX_OUT_OF_BOUNDS;
+        }
+        return 0;
+    }
+    index++;
+    RLEList tempList=list->next;
+    int currentIndex=0;
+    while(tempList)
+    {
+        currentIndex+=tempList->timesAppeared;
+        if(currentIndex>=index)
+        {
+            if(result)
+            {
+                *result=RLE_LIST_SUCCESS;
+            }
+            return(tempList->c);
+        }
+        tempList=tempList->next;
+    }
+
+    return 0;
 }
 
 char* numberToString(RLEList currentNode)
 {
     int i=0;
-    int num=urrentNode->timesAppeared;
+    int num=currentNode->timesAppeared;
     while(num)
     {
-        i++
-        num/=10;
+        i++;
+        num/=TEN;
     }
-    char* numberString=malloc(sizeof(*(numberString)*i));
-        if(numberToString == NULL)
-        {
-            return RLE_LIST_NULL_ARGUMENT;
-        }
-    int j=0;
-    while(currentNode->timesAppeared)
+    char* numberString=malloc(sizeof(*numberString)*(i+1));
+    if(!numberString)
     {
-        numberString[j]=(currentNode->timesAppeared%10)+'0'
-        currentNode->timesAppeared/=10;
-        j++;
+        return NULL;
+    }
+    numberString[i]='\0';
+    num=currentNode->timesAppeared;
+    for(i=i-1;i>=0;i--)
+    {
+        numberString[i]=(num%TEN)+'0';
+        num/=TEN;
     }
     return numberString;
 }
 
-char* RLEListExportToString(RLEList list, RLEListResult* result)
+char* RLEListExportToString(RLEList list, RLEListResult* result) // check
 {
-    RLEList tempList=list;
-    if(result == RLE_LIST_SUCCESS)
-    {  
-        int length;
-        while(tempList)
-        {
-            length+=sizeof(tempList->c)
-            while(tempList->timesAppeared)
-            {
-                length++; //sizeof(int)
-                tempList->timesAppeared/=10;   //check the 3otek
-            }
-            length++;  //\n
-        }
-        char* encodedWord=malloc(length+1);
-        if(encodedWord == NULL)
-        {
-            return RLE_LIST_NULL_ARGUMENT;
-        }
-        for(int j=0;j<length+1>;j++)
-        {
-            encodedWord[j]='\0';
-        }
-        tempList=list;
-        int i=0;
-        while(tempList)
-        {
-            strcat(encodedWord,tempList->c)
-            char* numberString=numberToString(tempList);
-            strcat(encodedWord,numberString);
-            free(numberString);
-            strcat(encodedWord,'\n');
-            tempList=tempList->next;
-        }
-        return encodedWord;
-    }
-    else
+    if(!list)
     {
+        if(result)
+        {
+            *result=RLE_LIST_NULL_ARGUMENT;
+        }
         return NULL;
     }
+    RLEList tempList=list;
+    int length=0;
+    while(tempList)
+    {
+        length++;
+        int numberCount=tempList->timesAppeared;
+        while(numberCount)
+        {
+            length++; //sizeof(int)
+            numberCount/=TEN;
+        }
+        length++;  //\n
+        tempList=tempList->next;
+    }
+    char* encodedWord=malloc(sizeof(char)*(length+1));
+    if(encodedWord == NULL)
+    {
+        if(result)
+        {
+            *result=RLE_LIST_OUT_OF_MEMORY;
+        }
+        return NULL;
+    }
+    for(int j=0;j<length+1;j++)
+    {
+        encodedWord[j]='\0';
+    }
+    tempList=list->next;
+    while(tempList)
+    {
+        char str[TWO] = {tempList->c, '\0'};
+        strcat(encodedWord, str);
+        char* numberString=numberToString(tempList);
+        if(numberString == NULL)
+        {
+            if(result)
+            {
+                *result=RLE_LIST_OUT_OF_MEMORY;
+            }
+            return NULL;
+        }
+        strcat(encodedWord,numberString);
+        free(numberString);
+        char newLineString[TWO] = {'\n', '\0'};
+        strcat(encodedWord, newLineString);
+        tempList=tempList->next;
+    }
+    if(result)
+    {
+        *result=RLE_LIST_SUCCESS;
+    }
+    return encodedWord;
 }
 
 
 
-RLEListResult RLEListMap(RLEList list, MapFunction map_function)
+RLEListResult RLEListMap(RLEList list, MapFunction map_function) //check
 {
-    if(list == NULL)
-        {
-            return(RLE_LIST_NULL_ARGUMENT);
-        }
-    RLEList tempList=list;
+    if(list == NULL || map_function == NULL)
+    {
+        return(RLE_LIST_NULL_ARGUMENT);
+    }
+    RLEList tempList=list->next;
     while(tempList)
-        {   
-            tempList->c=map_function(tempList->c);
-            tempList=tempList->next;
-        }
+    {
+        tempList->c=map_function(tempList->c);
+        tempList=tempList->next;
+    }
     return RLE_LIST_SUCCESS;
-    
+
 }

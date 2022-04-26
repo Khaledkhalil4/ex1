@@ -9,7 +9,8 @@ char* stringDuplicator(char* s, int times)
     char* out = malloc(sizeof(char)*(len*times)+1);
     char* temp_out=out;
     assert(out != NULL);
-    for (int i=0; i<times; i++){
+    for (int i=0; i<times; i++)
+    {
         strcpy(temp_out,s);
         temp_out += len;
     }
