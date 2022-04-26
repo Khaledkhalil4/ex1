@@ -7,7 +7,7 @@
 #define TEN 10
 
 typedef struct RLEList_t{
-    char c;
+    char letter;
     int timesAppeared;
     struct RLEList_t *next;
     //TODO: implement
@@ -22,7 +22,7 @@ RLEList RLEListCreate()
     {
         return NULL;
     }
-    ptr->c='\0';
+    ptr->letter='\0';
     ptr->timesAppeared=0;
     ptr->next=NULL;
     return ptr;
@@ -49,7 +49,7 @@ RLEListResult RLEListAppend(RLEList list, char value)
     {
         tempList=tempList->next;
     }
-    if(value == tempList->c)
+    if(value == tempList->letter)
     {
         tempList->timesAppeared+=1;
     }
@@ -61,7 +61,7 @@ RLEListResult RLEListAppend(RLEList list, char value)
             return RLE_LIST_OUT_OF_MEMORY;
         }
         tempList->next=newList;
-        newList->c=value;
+        newList->letter=value;
         newList->timesAppeared+=1;
     }
     return RLE_LIST_SUCCESS;
@@ -107,7 +107,7 @@ RLEListResult RLEListRemove(RLEList list, int index)
             if(tempList->timesAppeared == 0)
             {
                 RLEList nextList=tempList->next;
-                if(nextList!=NULL && previous->c==nextList->c)
+                if(nextList!=NULL && previous->letter==nextList->letter)
                 {
                     previous->timesAppeared+=nextList->timesAppeared;
                     previous->next=nextList->next;
@@ -157,7 +157,7 @@ char RLEListGet(RLEList list, int index, RLEListResult *result) //check *RESULT
             {
                 *result=RLE_LIST_SUCCESS;
             }
-            return(tempList->c);
+            return(tempList->letter);
         }
         tempList=tempList->next;
     }
@@ -229,8 +229,8 @@ char* RLEListExportToString(RLEList list, RLEListResult* result) // check
     tempList=list->next;
     while(tempList)
     {
-        char str[TWO] = {tempList->c, '\0'};
-        strcat(encodedWord, str);
+        char letterString[TWO] = {tempList->letter, '\0'};
+        strcat(encodedWord, letterString);
         char* numberString=numberToString(tempList);
         if(numberString == NULL)
         {
@@ -264,7 +264,7 @@ RLEListResult RLEListMap(RLEList list, MapFunction map_function) //check
     RLEList tempList=list->next;
     while(tempList)
     {
-        tempList->c=map_function(tempList->c);
+        tempList->letter=map_function(tempList->letter);
         tempList=tempList->next;
     }
     return RLE_LIST_SUCCESS;
